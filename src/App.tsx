@@ -3,10 +3,10 @@ import React, { useEffect, useState, useMemo } from 'react';
 import 'bulma/css/bulma.css';
 import '@fortawesome/fontawesome-free/css/all.css';
 
-import { TodoList } from './components/TodoList';
-import { TodoFilter } from './components/TodoFilter';
-import { TodoModal } from './components/TodoModal';
-import { Loader } from './components/Loader';
+import { TodosList } from './components/TodosList.tsx';
+import { TodoFilter } from './components/TodoFilter.tsx';
+import { TodoModal } from './components/TodoModal.tsx';
+import { Loader } from './components/Loader.tsx';
 
 import { Todo } from './types/Todo';
 import { User } from './types/User';
@@ -38,19 +38,24 @@ export const App: React.FC = () => {
         .finally(() => setLoadingUser(false));
     } else {
       setUser(null);
+      setLoadingUser(false); // сброс при закрытии модалки
     }
   }, [selectedTodo]);
 
   const visibleTodos = useMemo(() => {
     return todos
       .filter(todo => {
-        if (status === 'completed') return todo.completed;
-        if (status === 'active') return !todo.completed;
+        if (status === 'completed') {
+          return todo.completed;
+        }
+
+        if (status === 'active') {
+          return !todo.completed;
+        }
+
         return true;
       })
-      .filter(todo =>
-        todo.title.toLowerCase().includes(query.toLowerCase())
-      );
+      .filter(todo => todo.title.toLowerCase().includes(query.toLowerCase()));
   }, [todos, status, query]);
 
   return (
@@ -73,7 +78,7 @@ export const App: React.FC = () => {
               {loadingTodos ? (
                 <Loader />
               ) : (
-                <TodoList
+                <TodosList
                   todos={visibleTodos}
                   onSelect={setSelectedTodo}
                   selectedTodo={selectedTodo}
