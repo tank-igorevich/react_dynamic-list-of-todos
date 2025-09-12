@@ -3,10 +3,10 @@ import React, { useEffect, useState, useMemo } from 'react';
 import 'bulma/css/bulma.css';
 import '@fortawesome/fontawesome-free/css/all.css';
 
-import { TodosList } from './components/TodosList.tsx';
-import { TodoFilter } from './components/TodoFilter.tsx';
-import { TodoModal } from './components/TodoModal.tsx';
-import { Loader } from './components/Loader.tsx';
+import { TodoList } from './components/TodoList/TodoList';
+import { TodoFilter } from './components/TodoFilter/TodoFilter';
+import { TodoModal } from './components/TodoModal/TodoModal';
+import { Loader } from './components/Loader/Loader';
 
 import { Todo } from './types/Todo';
 import { User } from './types/User';
@@ -30,16 +30,32 @@ export const App: React.FC = () => {
       .finally(() => setLoadingTodos(false));
   }, []);
 
+  // guarded fetch for user
   useEffect(() => {
+    let isActive = true;
+
     if (selectedTodo) {
       setLoadingUser(true);
+
       getUser(selectedTodo.userId)
-        .then(setUser)
-        .finally(() => setLoadingUser(false));
+        .then(fetchedUser => {
+          if (isActive) {
+            setUser(fetchedUser);
+          }
+        })
+        .finally(() => {
+          if (isActive) {
+            setLoadingUser(false);
+          }
+        });
     } else {
       setUser(null);
-      setLoadingUser(false); // сброс при закрытии модалки
+      setLoadingUser(false);
     }
+
+    return () => {
+      isActive = false;
+    };
   }, [selectedTodo]);
 
   const visibleTodos = useMemo(() => {
@@ -78,7 +94,7 @@ export const App: React.FC = () => {
               {loadingTodos ? (
                 <Loader />
               ) : (
-                <TodosList
+                <TodoList
                   todos={visibleTodos}
                   onSelect={setSelectedTodo}
                   selectedTodo={selectedTodo}
